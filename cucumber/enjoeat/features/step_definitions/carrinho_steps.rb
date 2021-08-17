@@ -22,3 +22,53 @@ Dado('que o produto desejado é {string}') do |produto|
     total = cart.find('tr', text: 'Total:').find('td')
     expect(total.text).to eql valor_total
   end
+
+  # Lista de produtos 
+
+  Dado('que os produtos desejados são:') do |table|
+    @product_list = table.hashes
+  end
+  
+  Quando('eu adiciono todos os items') do
+    @product_list.each do |p|
+      p['quantidade'].to_i.times do
+        find(".menu-item-info-box", text: p["nome"].upcase).find(".add-to-cart").click
+      end
+    end
+end
+  
+  Então('vejo todos os itens no carrinho') do
+    cart = find("#cart")
+    @product_list.each do |p|
+      expect(cart).to have_text "(#{p['quantidade']}x) #{p['nome']}"
+    end
+  end
+
+  # Remover items 
+
+  Dado('que eu tenho os seguintes items no carrinho:') do |table|
+    @product_list = table.hashes
+    @product_list.each do |p|
+      p['quantidade'].to_i.times do
+        find(".menu-item-info-box", text: p["nome"].upcase).find(".add-to-cart").click
+      end
+    end
+  end
+  
+  Quando('eu removo somente o {int}') do |item|
+    cart = find('#cart')
+    cart.all('table tbody tr')[item].find(".danger").click
+  end
+
+  Quando('eu removo todos os items') do
+    @product_list.each_with_index do |value, idx|
+      cart = find("#cart")
+      cart.all('table tbody tr')[idx].find(".danger").click
+    end
+  end
+  
+  Então('vejo a seguinte mensagem no carrinho {string}') do |mensagem|
+    cart = find('cart')
+    expect(cart).to have_text mensagem
+  end
+    
